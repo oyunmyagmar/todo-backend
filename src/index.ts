@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 const app: Application = express();
 const port = 3000;
 
-const tasks = [
+let tasks = [
   {
     id: "2",
     name: "Buy groceries",
@@ -23,7 +23,7 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!---");
 });
 
-//read
+//read - json gj bichegui blovch yagad json butsaj bga?
 app.get("/tasks", (req: Request, res: Response) => {
   res.send(tasks);
 });
@@ -39,9 +39,8 @@ app.post("/tasks", (req: Request, res: Response) => {
 //delete
 app.delete("/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
-  tasks.filter((task) => task.id !== id);
-  // id.remove();
-  res.status(201).send(`Deleted item id:${id}`);
+  tasks = tasks.filter((task) => task.id !== id);
+  res.status(200).send(`Deleted item id:${id}`);
 });
 
 //update
