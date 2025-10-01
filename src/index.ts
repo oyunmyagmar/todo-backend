@@ -9,10 +9,12 @@ let tasks = [
   {
     id: "2",
     name: "Buy groceries",
+    isDone: false,
   },
   {
     id: "1",
     name: "Finish project report",
+    isDone: false,
   },
 ];
 
@@ -32,22 +34,48 @@ app.get("/tasks", (req: Request, res: Response) => {
 app.post("/tasks", (req: Request, res: Response) => {
   const id = uuidv4();
   const { name } = req.body;
-  tasks.unshift({ id, name });
+
+  if (!name) {
+    res.status(400).send({ message: "Name is required" });
+    return;
+  }
+
+  tasks.unshift({ id, name, isDone: false });
   res.status(201).send(`Created item id:${id}`);
 });
 
 //delete
 app.delete("/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
-  tasks = tasks.filter((task) => task.id !== id);
-  res.status(200).send(`Deleted item id:${id}`);
+  console.log({ id });
+
+  const newTasks = tasks.filter((task) => task.id !== id);
+  tasks = newTasks;
+  res.sendStatus(204); //No Content
 });
 
 //update
 app.put("/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
+  const { name } = req.body;
 
-  res.send([]);
+  const index = tasks.findIndex((task) => task.id === id);
+  tasks[index].name = name;
+  res.sendStatus(204);
+});
+
+//update
+app.put("/check/tasks/:id", (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  tasks = tasks.map((task) => {
+    if (task.id === id) {
+      return { ...task, isDone: !task.isDone };
+    }
+    return task;
+  });
+  // console.log(tasks, "tasks");
+  res.sendStatus(204);
 });
 
 app.listen(port, () => {
