@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello World!---");
+  res.send("Hello World!123");
 });
 
 //read - json gj bichegui blovch yagad json butsaj bga?

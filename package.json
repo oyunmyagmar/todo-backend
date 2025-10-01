@@ -2,7 +2,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "uuid": "^13.0.0"
+    "uuid": "^11.1.0"
   },
   "name": "backend",
   "version": "1.0.0",
@@ -10,7 +10,8 @@
   "scripts": {
     "start": "nodemon src/index.ts",
     "build": "tsc",
-    "serve": "node dist/index.js"
+    "serve": "node dist/index.js",
+    "type": "module"
   },
   "author": "",
   "license": "ISC",
