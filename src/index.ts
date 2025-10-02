@@ -1,22 +1,10 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import { v4 as uuidv4 } from "uuid";
+import fs, { write } from "node:fs";
 
 const app: Application = express();
 const port = 3000;
-
-let tasks = [
-  {
-    id: "2",
-    name: "Buy groceries",
-    isDone: false,
-  },
-  {
-    id: "1",
-    name: "Finish project report",
-    isDone: false,
-  },
-];
 
 app.use(cors());
 app.use(express.json());
@@ -25,8 +13,30 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!123");
 });
 
-//read - json gj bichegui blovch yagad json butsaj bga?
+function getTasks() {
+  const data = fs.readFileSync("data.txt", "utf8");
+  const tasks = JSON.parse(data);
+
+  return tasks;
+}
+
+function writeTasks(
+  tasks: {
+    id: string;
+    name: string;
+    isDone: boolean;
+    // ; filteredStatus: string
+  }[]
+) {
+  fs.writeFile("data.txt", JSON.stringify(tasks), (err) => {
+    if (err) {
+      console.error(err);
+    }
+  });
+}
+//read
 app.get("/tasks", (req: Request, res: Response) => {
+  const tasks = getTasks();
   res.send(tasks);
 });
 
@@ -40,27 +50,44 @@ app.post("/tasks", (req: Request, res: Response) => {
     return;
   }
 
-  tasks.unshift({ id, name, isDone: false });
+  const tasks = getTasks();
+
+  tasks.unshift({
+    id,
+    name,
+    isDone: false,
+    // , filteredStatus: "Active"
+  });
+
+  writeTasks(tasks);
   res.status(201).send(`Created item id:${id}`);
 });
 
 //delete
 app.delete("/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
-  console.log({ id });
 
-  const newTasks = tasks.filter((task) => task.id !== id);
-  tasks = newTasks;
+  const tasks = getTasks();
+
+  const newTasks = tasks.filter((task: { id: string }) => task.id !== id);
+
+  writeTasks(newTasks);
+
   res.sendStatus(204); //No Content
 });
 
-//update
+//update-edit
 app.put("/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const { name } = req.body;
 
-  const index = tasks.findIndex((task) => task.id === id);
+  const tasks = getTasks();
+
+  const index = tasks.findIndex((task: { id: string }) => task.id === id);
   tasks[index].name = name;
+
+  writeTasks(tasks);
+
   res.sendStatus(204);
 });
 
@@ -68,15 +95,27 @@ app.put("/tasks/:id", (req: Request, res: Response) => {
 app.put("/check/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
 
-  tasks = tasks.map((task) => {
-    if (task.id === id) {
-      return { ...task, isDone: !task.isDone };
-    }
-    return task;
-  });
-  // console.log(tasks, "tasks");
+  const tasks = getTasks();
+
+  const index = tasks.findIndex((task: { id: string }) => task.id === id);
+  tasks[index].isDone = !tasks[index].isDone;
+
+  writeTasks(tasks);
+
   res.sendStatus(204);
 });
+
+// //update-filter
+// app.put("/filter/tasks/:btn", (req: Request, res: Response) => {
+//   const btn = req.params.btn;
+
+//   const tasks = getTasks();
+
+//   const index = tasks.findIndex((task: string) => task.filteresStatus === btn);
+//   writeTasks(tasks);
+
+//   res.sendStatus(204);
+// });
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
@@ -84,4 +123,16 @@ app.listen(port, () => {
 
 // app.get("/tasks", (req:Request, res) => {
 //   res.json(todoDatas);
+// });
+
+// tasks = tasks.map((task) => {
+//   if (task.id === id) {
+//     return { ...task, isDone: !task.isDone };
+//   }
+//   return task;
+// });
+// console.log(tasks, "tasks");
+
+// const checkedTasks = tasks.map((task: { id: string; isDone: boolean }) => {
+//   if (task.id === id) return { ...task, isDone: !task.isDone };
 // });
