@@ -24,8 +24,7 @@ function writeTasks(
   tasks: {
     id: string;
     name: string;
-    isDone: boolean;
-    // ; filteredStatus: string
+    // isDone: boolean;
   }[]
 ) {
   fs.writeFile("data.txt", JSON.stringify(tasks), (err) => {
@@ -34,10 +33,23 @@ function writeTasks(
     }
   });
 }
+
 //read
 app.get("/tasks", (req: Request, res: Response) => {
+  const { status } = req.query;
   const tasks = getTasks();
-  res.send(tasks);
+
+  const filteredTasks = tasks.filter((task: { isDone: boolean }) => {
+    if (status === "All") {
+      return true;
+    } else if (status === "Active") {
+      return !task.isDone;
+    } else {
+      return task.isDone;
+    }
+  });
+
+  res.send(filteredTasks);
 });
 
 //create
@@ -55,8 +67,7 @@ app.post("/tasks", (req: Request, res: Response) => {
   tasks.unshift({
     id,
     name,
-    isDone: false,
-    // , filteredStatus: "Active"
+    // isDone: false,
   });
 
   writeTasks(tasks);
@@ -92,7 +103,7 @@ app.put("/tasks/:id", (req: Request, res: Response) => {
 });
 
 //update
-app.put("/check/tasks/:id", (req: Request, res: Response) => {
+app.patch("/tasks/:id/check", (req: Request, res: Response) => {
   const id = req.params.id;
 
   const tasks = getTasks();
@@ -104,18 +115,6 @@ app.put("/check/tasks/:id", (req: Request, res: Response) => {
 
   res.sendStatus(204);
 });
-
-// //update-filter
-// app.put("/filter/tasks/:btn", (req: Request, res: Response) => {
-//   const btn = req.params.btn;
-
-//   const tasks = getTasks();
-
-//   const index = tasks.findIndex((task: string) => task.filteresStatus === btn);
-//   writeTasks(tasks);
-
-//   res.sendStatus(204);
-// });
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
@@ -135,4 +134,16 @@ app.listen(port, () => {
 
 // const checkedTasks = tasks.map((task: { id: string; isDone: boolean }) => {
 //   if (task.id === id) return { ...task, isDone: !task.isDone };
+// });
+
+//update-filter
+// app.put("/filter/tasks/:status", (req: Request, res: Response) => {
+//   const status = req.params.status;
+
+//   const tasks = getTasks();
+
+//   const index = tasks.findIndex((task: string) => task.status === status);
+//   writeTasks(tasks);
+
+//   res.sendStatus(204);
 // });
