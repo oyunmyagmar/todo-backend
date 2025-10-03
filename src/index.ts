@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs, { write } from "node:fs";
 
 const app: Application = express();
-const port = 3000;
+const port = 3004;
 
 app.use(cors());
 app.use(express.json());
