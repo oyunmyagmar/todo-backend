@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs, { write } from "node:fs";
 
 const app: Application = express();
-const port = 3004;
+const port = 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -24,7 +24,6 @@ function writeTasks(
   tasks: {
     id: string;
     name: string;
-    // isDone: boolean;
   }[]
 ) {
   fs.writeFile("data.txt", JSON.stringify(tasks), (err) => {
@@ -67,7 +66,6 @@ app.post("/tasks", (req: Request, res: Response) => {
   tasks.unshift({
     id,
     name,
-    // isDone: false,
   });
 
   writeTasks(tasks);
