@@ -15,6 +15,7 @@ app.get("/", (req: Request, res: Response) => {
 
 function getTasks() {
   const data = fs.readFileSync("data.txt", "utf8");
+
   const tasks = JSON.parse(data);
 
   return tasks;
@@ -33,9 +34,9 @@ function writeTasks(
   });
 }
 
-//read
 app.get("/tasks", (req: Request, res: Response) => {
   const { status } = req.query;
+
   const tasks = getTasks();
 
   const filteredTasks = tasks.filter((task: { isDone: boolean }) => {
@@ -48,12 +49,12 @@ app.get("/tasks", (req: Request, res: Response) => {
     }
   });
 
-  res.send(filteredTasks);
+  res.json({ tasks: filteredTasks, total: tasks.length });
 });
 
-//create
 app.post("/tasks", (req: Request, res: Response) => {
   const id = uuidv4();
+
   const { name } = req.body;
 
   if (!name) {
@@ -66,13 +67,24 @@ app.post("/tasks", (req: Request, res: Response) => {
   tasks.unshift({
     id,
     name,
+    isDone: false,
   });
 
   writeTasks(tasks);
+
   res.status(201).send(`Created item id:${id}`);
 });
 
-//delete
+app.delete("/tasks/completed", (req: Request, res: Response) => {
+  const tasks = getTasks();
+
+  const activeTasks = tasks.filter((task: { isDone: boolean }) => !task.isDone);
+
+  writeTasks(activeTasks);
+
+  res.sendStatus(204);
+});
+
 app.delete("/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
 
@@ -82,10 +94,9 @@ app.delete("/tasks/:id", (req: Request, res: Response) => {
 
   writeTasks(newTasks);
 
-  res.sendStatus(204); //No Content
+  res.sendStatus(204);
 });
 
-//update-edit
 app.put("/tasks/:id", (req: Request, res: Response) => {
   const id = req.params.id;
   const { name } = req.body;
@@ -100,7 +111,6 @@ app.put("/tasks/:id", (req: Request, res: Response) => {
   res.sendStatus(204);
 });
 
-//update
 app.patch("/tasks/:id/check", (req: Request, res: Response) => {
   const id = req.params.id;
 
@@ -117,31 +127,3 @@ app.patch("/tasks/:id/check", (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
-// app.get("/tasks", (req:Request, res) => {
-//   res.json(todoDatas);
-// });
-
-// tasks = tasks.map((task) => {
-//   if (task.id === id) {
-//     return { ...task, isDone: !task.isDone };
-//   }
-//   return task;
-// });
-// console.log(tasks, "tasks");
-
-// const checkedTasks = tasks.map((task: { id: string; isDone: boolean }) => {
-//   if (task.id === id) return { ...task, isDone: !task.isDone };
-// });
-
-//update-filter
-// app.put("/filter/tasks/:status", (req: Request, res: Response) => {
-//   const status = req.params.status;
-
-//   const tasks = getTasks();
-
-//   const index = tasks.findIndex((task: string) => task.status === status);
-//   writeTasks(tasks);
-
-//   res.sendStatus(204);
-// });
